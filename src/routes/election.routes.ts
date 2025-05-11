@@ -1,6 +1,6 @@
 // src/routes/election.routes.ts
 import { Router } from 'express';
-import { createElection } from '../controller/election.controller';
+import { createElection, getAllElections } from '../controller/election.controller';
 
 
 const router = Router();
@@ -14,5 +14,8 @@ router.post('/election', async (req, res) => {
      res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+router.get('/elections', getAllElections);
+
 
 export default router;

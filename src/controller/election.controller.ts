@@ -13,6 +13,9 @@ const createElectionSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format. Use HH:MM'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD'),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format. Use HH:MM'),
+  memberIds: z.array(z.string().uuid())
+    .max(5, 'No more than 5 members allowed')
+    .optional(),
 });
 
 export const createElection = async (req: Request, res: Response) => {
@@ -27,7 +30,7 @@ export const createElection = async (req: Request, res: Response) => {
       });
     }
 
-    const { memberId, title, description, startDate, startTime, endDate, endTime } = validationResult.data;
+    const { memberId, title, description, startDate, startTime, endDate, endTime, memberIds } = validationResult.data;
 
     // Check if member exists
     const member = await prisma.member.findUnique({
@@ -39,6 +42,25 @@ export const createElection = async (req: Request, res: Response) => {
         success: false,
         message: 'Member not found'
       });
+    }
+
+    // Validate memberIds if provided
+    if (memberIds && memberIds.length > 0) {
+      // Check if all members exist
+      const members = await prisma.member.findMany({
+        where: {
+          id: {
+            in: memberIds
+          }
+        }
+      });
+
+      if (members.length !== memberIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'One or more members in the list do not exist'
+        });
+      }
     }
 
     // Parse dates and times
@@ -64,6 +86,40 @@ export const createElection = async (req: Request, res: Response) => {
       }
     });
 
+    // If memberIds are provided, create candidate entries for these members
+    if (memberIds && memberIds.length > 0) {
+      // Create candidate entries for each member
+      const candidatePromises = memberIds.map(id => 
+        prisma.candidate.create({
+          data: {
+            memberId: id,
+            electionId: election.id
+          }
+        })
+      );
+      
+      await Promise.all(candidatePromises);
+      
+      // Fetch the updated election with candidates
+      const updatedElection = await prisma.election.findUnique({
+        where: { id: election.id },
+        include: {
+          admin: true,
+          candidates: {
+            include: {
+              member: true
+            }
+          }
+        }
+      });
+      
+      return res.status(201).json({
+        success: true,
+        message: 'Election created successfully',
+        data: updatedElection
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Election created successfully',
@@ -76,5 +132,28 @@ export const createElection = async (req: Request, res: Response) => {
       success: false,
       message: 'An error occurred while creating the election'
     });
+  }
+};
+
+export const getAllElections = async (req: Request, res: Response) => {
+  try {
+    const elections = await prisma.election.findMany({
+      include: {
+        admin: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        candidates: true,
+        votes: true
+      }
+    });
+
+    res.status(200).json(elections);
+  } catch (error) {
+    console.error('Error fetching elections:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
