@@ -26,19 +26,26 @@ model Member {
   Election Election[]
 }
 
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Candidate {
-  id          String    @id @default(uuid())
-  memberId    String
-  electionId  String
- 
-  appliedAt   DateTime  @default(now())
+  id                   String    @id @default(uuid())
+  memberId             String
+  electionId           String
+  appliedAt            DateTime  @default(now())
+  proposedElectionDate DateTime
+  status               Status    @default(PENDING)
 
   member      Member    @relation(fields: [memberId], references: [id])
   election    Election  @relation(fields: [electionId], references: [id])
+  Vote        Vote[]
 
   @@unique([memberId, electionId])
   @@map("candidates")
-  Vote Vote[]
 }
 
 

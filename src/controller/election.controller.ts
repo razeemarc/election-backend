@@ -93,7 +93,8 @@ export const createElection = async (req: Request, res: Response) => {
         prisma.candidate.create({
           data: {
             memberId: id,
-            electionId: election.id
+            electionId: election.id,
+            proposedElectionDate: new Date() // Adding the required field
           }
         })
       );

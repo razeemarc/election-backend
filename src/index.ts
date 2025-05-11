@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import memberRoutes from './routes/memberRoutes';
 import electionRoutes from './routes/election.routes';
+import candidateRoutes from './routes/candidate.routes';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api', memberRoutes);
 app.use('/api/admin', electionRoutes);
+app.use('/api/user', candidateRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
