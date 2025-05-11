@@ -4,6 +4,7 @@ import authRoutes from './routes/authRoutes';
 import memberRoutes from './routes/memberRoutes';
 import electionRoutes from './routes/election.routes';
 import candidateRoutes from './routes/candidate.routes';
+import voteRoutes from './routes/vote.routes';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', memberRoutes);
 app.use('/api/admin', electionRoutes);
 app.use('/api/user', candidateRoutes);
+app.use('/api/vote',voteRoutes)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
