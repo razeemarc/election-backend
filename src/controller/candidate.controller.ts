@@ -158,3 +158,45 @@ export const submitCandidateForm = async (req: Request, res: Response): Promise<
       });
     }
   };
+
+  export const getPendingCandidates = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const pendingCandidates = await prisma.candidate.findMany({
+        where: {
+          status: 'PENDING'
+        },
+        include: {
+          member: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          election: {
+            select: {
+              id: true,
+              title: true,
+              startTime: true,
+              endTime: true
+            }
+          }
+        },
+        orderBy: {
+          appliedAt: 'desc' // Sort by most recently applied first
+        }
+      });
+  
+      res.status(200).json({
+        success: true,
+        data: pendingCandidates,
+        message: 'Pending candidates retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Error fetching pending candidates:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  };
