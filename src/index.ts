@@ -10,7 +10,7 @@ const app = express();
 
 // 🔐 Allow CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // your frontend origin
+  origin: 'https://voting-system-eight-lovat.vercel.app', // your frontend origin
   credentials: true, // allow cookies / credentials if needed
 }));
 
