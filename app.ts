@@ -1,19 +1,10 @@
-// import express from 'express';
-// import { authMiddleware } from './middleware/auth';
-// import { getProfile } from '../../routes/profile';
+import dotenv from 'dotenv';
 
-// const app = express();
-// const PORT = process.env.PORT || 3000;
+// Load environment variables first
+dotenv.config();
 
-// // Middleware
-// app.use(express.json());
+// Import the configured Express app from src/index.ts
+import './src/index';
 
-// // Routes
-// app.get('/api/profile', authMiddleware, getProfile);
-
-// // Start server
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
-
-// export default app;
+// This file now serves as the entry point for your application
+// The actual Express configuration is in src/index.ts
