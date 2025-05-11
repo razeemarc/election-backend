@@ -200,3 +200,109 @@ export const submitCandidateForm = async (req: Request, res: Response): Promise<
       });
     }
   };
+  export const approveCandidate = async (req: Request, res: Response): Promise<void> => {
+    const { memberId, electionId } = req.params;
+    const { status } = req.body;
+  
+    try {
+      // Validate status
+      if (status !== 'APPROVED' && status !== 'REJECTED') {
+        res.status(400).json({ success: false, message: 'Invalid status' });
+        return;
+      }
+  
+      // Check if candidate exists
+      const existingCandidate = await prisma.candidate.findUnique({
+        where: {
+          memberId_electionId: {
+            memberId,
+            electionId
+          }
+        }
+      });
+  
+      if (!existingCandidate) {
+        res.status(404).json({ success: false, message: 'Candidate not found' });
+        return;
+      }
+  
+      // Update candidate status
+      const updatedCandidate = await prisma.candidate.update({
+        where: {
+          memberId_electionId: {
+            memberId,
+            electionId
+          }
+        },
+        data: {
+          status: status
+        },
+        include: {
+          member: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          election: {
+            select: {
+              id: true,
+              title: true
+            }
+          }
+        }
+      });
+  
+      res.status(200).json({
+        success: true,
+        data: updatedCandidate,
+        message: `Candidate ${status.toLowerCase()} successfully`
+      });
+  
+    } catch (error) {
+      console.error('Error updating candidate status:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  };
+  
+  export const rejectCandidate = async (req: Request, res: Response): Promise<void> => {
+    const { memberId, electionId } = req.params;
+  
+    try {
+      // Check if candidate exists
+      const existingCandidate = await prisma.candidate.findUnique({
+        where: {
+          memberId_electionId: {
+            memberId,
+            electionId
+          }
+        }
+      });
+  
+      if (!existingCandidate) {
+        res.status(404).json({ success: false, message: 'Candidate not found' });
+        return;
+      }
+  
+      // Delete the candidate record for rejection
+      await prisma.candidate.delete({
+        where: {
+          memberId_electionId: {
+            memberId,
+            electionId
+          }
+        }
+      });
+  
+      res.status(200).json({
+        success: true,
+        message: 'Candidate rejected and removed successfully'
+      });
+  
+    } catch (error) {
+      console.error('Error rejecting candidate:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  };
+  
