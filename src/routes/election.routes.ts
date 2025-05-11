@@ -1,6 +1,6 @@
 // src/routes/election.routes.ts
 import { Router } from 'express';
-import { createElection, getAllElections } from '../controller/election.controller';
+import { createElection, deleteElection, getAllElections, updateElection } from '../controller/election.controller';
 
 
 const router = Router();
@@ -16,6 +16,25 @@ router.post('/election', async (req, res) => {
 });
 
 router.get('/elections', getAllElections);
+// Update election endpoint
+router.put('/election/:id', async (req, res) => {
+  try {
+    await updateElection(req, res);
+  } catch (error) {
+    console.error('Error updating election:', error);
+    res.status(500).json({ error: 'Failed to update election' });
+  }
+});
+
+// Delete election endpoint
+router.delete('/election/:id', async (req, res) => {
+  try {
+    await deleteElection(req, res);
+  } catch (error) {
+    console.error('Error deleting election:', error);
+    res.status(500).json({ error: 'Failed to delete election' });
+  }
+});
 
 
 export default router;

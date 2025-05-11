@@ -12,8 +12,18 @@ const app = express();
 
 // 🔐 Allow CORS
 app.use(cors({
-  origin: 'https://voting-system-eight-lovat.vercel.app', // your frontend origin
-  credentials: true, // allow cookies / credentials if needed
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://voting-system-eight-lovat.vercel.app',
+      'http://localhost:3000'
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
 }));
 
 app.use(express.json());

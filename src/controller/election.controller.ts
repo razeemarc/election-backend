@@ -158,3 +158,67 @@ export const getAllElections = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const updateElection = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { title, description, startTime, endTime } = req.body
+
+  try {
+    // Check if election exists
+    const existingElection = await prisma.election.findUnique({
+      where: { id }
+    })
+
+    if (!existingElection) {
+      return res.status(404).json({ error: 'Election not found' })
+    }
+
+    const updatedElection = await prisma.election.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        startTime: startTime ? new Date(startTime) : undefined,
+        endTime: endTime ? new Date(endTime) : undefined
+      }
+    })
+
+    res.status(200).json(updatedElection)
+  } catch (error) {
+    console.error('Error updating election:', error)
+    res.status(500).json({ error: 'Failed to update election' })
+  }
+}
+
+export const deleteElection = async (req: Request, res: Response) => {
+  const { id } = req.params
+
+  try {
+    // Check if election exists
+    const existingElection = await prisma.election.findUnique({
+      where: { id }
+    })
+
+    if (!existingElection) {
+      return res.status(404).json({ error: 'Election not found' })
+    }
+
+    // Use transaction to delete related records first
+    await prisma.$transaction([
+      prisma.vote.deleteMany({
+        where: { electionId: id }
+      }),
+      prisma.candidate.deleteMany({
+        where: { electionId: id }
+      }),
+      prisma.election.delete({
+        where: { id }
+      })
+    ])
+
+    res.status(200).json({ message: 'Election deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting election:', error)
+    res.status(500).json({ error: 'Failed to delete election' })
+  }
+}
