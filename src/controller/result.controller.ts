@@ -13,6 +13,7 @@ export const getAllElectionResults = async (req: Request, res: Response) => {
         startTime: true,
         endTime: true,
         candidates: {
+          where: { status: 'APPROVED' },
           select: {
             id: true,
             member: {
