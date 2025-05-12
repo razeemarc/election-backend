@@ -147,7 +147,9 @@ export const getAllElections = async (req: Request, res: Response) => {
             email: true
           }
         },
-        candidates: true,
+        candidates: {
+          where: { status: 'APPROVED' }
+        },
         votes: true
       }
     });
