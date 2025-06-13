@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm run start
+    startCommand: node dist/app.js  # Changed from npm run start
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -12,9 +12,3 @@ services:
           property: connectionString
       - key: NODE_ENV
         value: production
-
-databases:
-  - name: postgres-db
-    databaseName: mydb
-    user: myuser
-    plan: free
